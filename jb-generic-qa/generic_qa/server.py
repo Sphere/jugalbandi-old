@@ -266,12 +266,13 @@ async def get_rephrased_query(
     return {"given_query": query_string, "rephrased_query": answer}
 
 
+# Tenant endpoints
 @app.get(
-    "/get-balance-quota",
-    summary="Get balance quota using api key",
-    tags=["Tenant Quota"],
+    "/tenant-balance-quota",
+    summary="Get a tenant's balance quota using api key",
+    tags=["Tenant"],
 )
-async def get_balance_quota(
+async def get_tenant_balance_quota(
     authorization: Annotated[User, Depends(verify_access_token)],
     api_key: str,
     tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
@@ -280,6 +281,155 @@ async def get_balance_quota(
     if response is None:
         raise IncorrectInputException("Invalid API key")
     return {"balance_quota": response}
+
+
+@app.get(
+    "/tenant-details",
+    summary="Get a tenant's details using Email ID",
+    tags=["Tenant"],
+)
+async def get_tenant_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    email: str,
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+):
+    response = await tenant_repository.get_tenant_details(email)
+    if response is None:
+        raise IncorrectInputException("Invalid Email ID")
+    return {"tenant_detail": response}
+
+
+@app.get(
+    "/all-tenant-emails",
+    summary="Get all tenant Email IDs",
+    tags=["Tenant"],
+)
+async def get_all_tenant_emails(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+):
+    response = await tenant_repository.get_all_tenant_emails()
+    return {"all_tenant_emails": response}
+
+
+@app.post(
+    "/tenant-details",
+    summary="Insert tenant details",
+    tags=["Tenant"],
+)
+async def post_tenant_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+    name: str,
+    email_id: str,
+    phone_number: str,
+    api_key: str,
+    password: str,
+):
+    await tenant_repository.insert_into_tenant(
+        name=name,
+        email_id=email_id,
+        phone_number=phone_number,
+        api_key=api_key,
+        password=password,
+    )
+    return "Tenant information insertion is successful"
+
+
+@app.post(
+    "/tenant-document-details",
+    summary="Insert tenant document details",
+    tags=["Tenant"],
+)
+async def post_tenant_document_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+    document_uuid: str,
+    document_name: str,
+    documents_list: list,
+    prompt: str,
+    welcome_message: str,
+):
+    await tenant_repository.insert_into_tenant_document(
+        document_uuid=document_uuid,
+        document_name=document_name,
+        documents_list=documents_list,
+        prompt=prompt,
+        welcome_message=welcome_message,
+    )
+    return "Tenant document information insertion is successful"
+
+
+@app.post(
+    "/tenant-bot-details",
+    summary="Insert tenant bot details",
+    tags=["Tenant"],
+)
+async def post_tenant_bot_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+    tenant_api_key: str,
+    document_uuid: str,
+    phone_number: list,
+    country_code: str,
+):
+    await tenant_repository.insert_into_tenant_bot(
+        tenant_api_key=tenant_api_key,
+        document_uuid=document_uuid,
+        phone_number=phone_number,
+        country_code=country_code,
+    )
+    return "Tenant bot information insertion is successful"
+
+
+@app.get(
+    "/tenant-document-details",
+    summary="Get a tenant's document details using Email ID",
+    tags=["Tenant"],
+)
+async def get_tenant_document_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    email: str,
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+):
+    response = await tenant_repository.get_tenant_document_details_from_email_id(email)
+    if response is None:
+        raise IncorrectInputException("Invalid Email ID")
+    return {"tenant_document_detail": response}
+
+
+@app.put(
+    "/tenant-bot-details",
+    summary="Update tenant bot details",
+    tags=["Tenant"],
+)
+async def put_tenant_bot_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+    document_uuid: str,
+    tenant_api_key: str,
+    updated_bot_details: list,
+):
+    await tenant_repository.update_tenant_bot_details(
+        document_uuid=document_uuid,
+        tenant_api_key=tenant_api_key,
+        updated_bot_details=updated_bot_details,
+    )
+    return "Tenant bot information updation is successful"
+
+
+@app.delete(
+    "/tenant-bot-details",
+    summary="Delete tenant bot details",
+    tags=["Tenant"],
+)
+async def delete_tenant_bot_details(
+    authorization: Annotated[User, Depends(verify_access_token)],
+    tenant_repository: Annotated[TenantRepository, Depends(get_tenant_repository)],
+    document_uuid: str,
+):
+    await tenant_repository.delete_tenant_bot_details(document_uuid=document_uuid)
+    return "Tenant bot information deletion is successful"
 
 
 @app.post("/response-feedback", include_in_schema=False)
