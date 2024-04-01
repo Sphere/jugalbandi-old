@@ -1,14 +1,15 @@
 import asyncio
+import logging
+import os
+import re
+import uuid
 from enum import Enum
 from io import BytesIO
 from typing import Any, AsyncIterator, Dict, List, Protocol
-import os
-import uuid
-import re
-import logging
-from pydantic import BaseModel
 from zipfile import ZipFile, ZipInfo
+
 from jugalbandi.storage import Storage
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -137,11 +138,12 @@ class DocumentCollection:
                 for file_info in zf.infolist():
                     filename = file_info.filename
                     if filename.startswith("__MACOSX/") or filename.endswith(
-                            ".DS_Store"):
+                        ".DS_Store"
+                    ):
                         continue
-
+                    file_base_name = os.path.basename(filename)
                     zip_source_file = DocumentSourceFile(
-                        filename, ZipFileReader(zf, file_info)
+                        file_base_name, ZipFileReader(zf, file_info)
                     )
 
                     task_group.create_task(self._add_data_file(zip_source_file))
