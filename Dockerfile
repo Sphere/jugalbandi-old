@@ -2,8 +2,8 @@ FROM python:3.11.4-bullseye
 
 RUN apt-get -y update \ 
     && apt-get install -y ffmpeg \
-    && wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz \
-    && tar -xvf xpdf-tools-linux-4.04.tar.gz && cp xpdf-tools-linux-4.04/bin64/pdftotext /usr/local/bin
+    && wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.05.tar.gz \
+    && tar -xvf xpdf-tools-linux-4.05.tar.gz && cp xpdf-tools-linux-4.05/bin64/pdftotext /usr/local/bin
 
 RUN pip install --upgrade pip \
     && pip install --upgrade poetry \
